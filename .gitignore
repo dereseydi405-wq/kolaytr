@@ -15,3 +15,5 @@ build_log.txt
 build/
 .flutter-plugins-dependencies
 .idea/
+android/key.properties
+release_build_log.txt
