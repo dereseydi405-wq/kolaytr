@@ -487,10 +487,8 @@ class CloudDocumentService {
           .map((row) => Map<String, dynamic>.from(row as Map)['id'].toString())
           .toSet();
 
-      final currentCloudIds = documents
-          .map((item) => item.id)
-          .where(_looksLikeUuid)
-          .toSet();
+      final currentCloudIds =
+          documents.map((item) => item.id).where(_looksLikeUuid).toSet();
 
       final deletedIds = cloudIds.difference(currentCloudIds);
 
@@ -590,10 +588,8 @@ class CloudReminderService {
           .map((row) => Map<String, dynamic>.from(row as Map)['id'].toString())
           .toSet();
 
-      final currentCloudIds = reminders
-          .map((item) => item.id)
-          .where(_looksLikeUuid)
-          .toSet();
+      final currentCloudIds =
+          reminders.map((item) => item.id).where(_looksLikeUuid).toSet();
 
       final deletedIds = cloudIds.difference(currentCloudIds);
 
@@ -662,9 +658,8 @@ class CloudFavoriteService {
 
       if (userId == null) return;
 
-      final cloudRows = await client
-          .from('user_favorites')
-          .select('procedure_title');
+      final cloudRows =
+          await client.from('user_favorites').select('procedure_title');
 
       final cloudTitles = (cloudRows as List)
           .map((row) => Map<String, dynamic>.from(row as Map))
@@ -850,12 +845,8 @@ class NotificationService {
 
     await plugin.initialize(settings: settings);
 
-    final android = plugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
-
-    await android?.requestExactAlarmsPermission();
+    final android = plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
   }
 
   static String reminderNotificationKey(SavedReminder reminder) {
@@ -872,10 +863,8 @@ class NotificationService {
 
   static Future<bool> ensureNotificationPermission() async {
     try {
-      final androidPlugin = plugin
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >();
+      final androidPlugin = plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
 
       final granted = await androidPlugin?.requestNotificationsPermission();
 
@@ -921,7 +910,7 @@ class NotificationService {
     }
 
     try {
-      await scheduleWith(AndroidScheduleMode.exactAllowWhileIdle);
+      await scheduleWith(AndroidScheduleMode.inexactAllowWhileIdle);
     } catch (_) {
       await scheduleWith(AndroidScheduleMode.inexactAllowWhileIdle);
     }
@@ -1456,9 +1445,7 @@ class HomePage extends StatelessWidget {
         const LifeEventsHomeCard(),
         const SizedBox(height: 18),
         const UpcomingRemindersSection(),
-
         const SizedBox(height: 18),
-
         const FavoriteProceduresSection(),
         const SizedBox(height: 22),
         Container(
@@ -1515,7 +1502,6 @@ class HomePage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-
         const Text(
           'Bugün ne yapmak istiyorsun?',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
@@ -1575,7 +1561,6 @@ class HomePage extends StatelessWidget {
             );
           },
         ),
-
         const Text(
           'Kategori İşlem Sayıları',
           style: TextStyle(
@@ -1592,104 +1577,101 @@ class HomePage extends StatelessWidget {
             return Wrap(
               spacing: 12,
               runSpacing: 12,
-              children:
-                  <String>[
-                    'Kimlik',
-                    'Araç',
-                    'Ev',
-                    'Sağlık',
-                    'Belge',
-                    'Haklar',
-                  ].map((category) {
-                    final normalizedCategory = kolayTrNormalizeSearch(category);
-                    final count = procedures
-                        .where(
-                          (item) =>
-                              kolayTrNormalizeSearch(item.category) ==
-                              normalizedCategory,
-                        )
-                        .length;
+              children: <String>[
+                'Kimlik',
+                'Araç',
+                'Ev',
+                'Sağlık',
+                'Belge',
+                'Haklar',
+              ].map((category) {
+                final normalizedCategory = kolayTrNormalizeSearch(category);
+                final count = procedures
+                    .where(
+                      (item) =>
+                          kolayTrNormalizeSearch(item.category) ==
+                          normalizedCategory,
+                    )
+                    .length;
 
-                    return SizedBox(
-                      width: itemWidth,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(22),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  GuidePage(initialCategory: category),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF7F7FB),
-                            borderRadius: BorderRadius.circular(22),
-                            border: Border.all(color: const Color(0xFFE0E1E8)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 42,
-                                height: 42,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE9EEFF),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Icon(
-                                  kolayTrHomeIconForCategory(category),
-                                  color: const Color(0xFF3158A4),
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      category,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w900,
-                                        color: Color(0xFF1F2330),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '$count işlem',
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF666B78),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
+                return SizedBox(
+                  width: itemWidth,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(22),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => GuidePage(initialCategory: category),
                         ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF7F7FB),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(color: const Color(0xFFE0E1E8)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                    );
-                  }).toList(),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE9EEFF),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Icon(
+                              kolayTrHomeIconForCategory(category),
+                              color: const Color(0xFF3158A4),
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  category,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                    color: Color(0xFF1F2330),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '$count işlem',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF666B78),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             );
           },
         ),
         const SizedBox(height: 28),
-
         const Text(
           'Popüler İşlemler',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
@@ -2138,10 +2120,8 @@ class _GuidePageState extends State<GuidePage> {
       final searchableText = kolayTrNormalizeSearch(
         '${item.title} ${item.category}',
       );
-      final titleWords = title
-          .split(' ')
-          .where((word) => word.isNotEmpty)
-          .toList();
+      final titleWords =
+          title.split(' ').where((word) => word.isNotEmpty).toList();
 
       // 1) Başlık yazılan harf/kelimeyle başlıyorsa en üstte
       // Örn: a -> Araç, Acil, Adalet
@@ -2179,8 +2159,7 @@ class _GuidePageState extends State<GuidePage> {
     }
 
     final selected = kolayTrNormalizeSearch(selectedCategory);
-    final isAllCategory =
-        selectedCategory == 'Tüm' ||
+    final isAllCategory = selectedCategory == 'Tüm' ||
         selectedCategory == 'Tümü' ||
         selected == 'tum' ||
         selected == 'tumu';
@@ -2395,13 +2374,9 @@ class DetailPage extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 18),
-
             const _KolayTrOfficialWarningCard(),
-
             const SizedBox(height: 18),
-
             _KolayTrInfoCard(
               icon: Icons.account_balance_outlined,
               title: 'Nereden yapılır?',
@@ -2415,9 +2390,7 @@ class DetailPage extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 18),
-
             if (documents.isNotEmpty)
               _KolayTrInfoCard(
                 icon: Icons.folder_copy_outlined,
@@ -2456,9 +2429,7 @@ class DetailPage extends StatelessWidget {
                   ],
                 ),
               ),
-
             if (documents.isNotEmpty) const SizedBox(height: 18),
-
             if (steps.isNotEmpty)
               _KolayTrInfoCard(
                 icon: Icons.route_outlined,
@@ -2474,9 +2445,7 @@ class DetailPage extends StatelessWidget {
                   ],
                 ),
               ),
-
             if (steps.isNotEmpty) const SizedBox(height: 18),
-
             if (warnings.isNotEmpty)
               Container(
                 padding: const EdgeInsets.all(18),
@@ -2541,9 +2510,7 @@ class DetailPage extends StatelessWidget {
                   ],
                 ),
               ),
-
             if (warnings.isNotEmpty) const SizedBox(height: 22),
-
             SizedBox(
               width: double.infinity,
               height: 58,
@@ -2558,9 +2525,7 @@ class DetailPage extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 14),
-
             const Text(
               'KolayTR yalnızca rehberlik ve yönlendirme sağlar. Resmi işlem, ücret, belge ve randevu bilgileri için her zaman ilgili kurumun resmi sitesini kontrol et.',
               textAlign: TextAlign.center,
@@ -2996,9 +2961,8 @@ class _AddDocumentPageState extends State<AddDocumentPage> {
     if (existing != null) {
       titleController.text = existing.title;
       noteController.text = existing.note;
-      category = categories.contains(existing.category)
-          ? existing.category
-          : 'Diğer';
+      category =
+          categories.contains(existing.category) ? existing.category : 'Diğer';
     }
   }
 
@@ -3029,8 +2993,7 @@ class _AddDocumentPageState extends State<AddDocumentPage> {
       title: title,
       category: category,
       note: noteController.text.trim(),
-      createdAt:
-          existing?.createdAt ??
+      createdAt: existing?.createdAt ??
           '${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}',
     );
 
@@ -3170,9 +3133,8 @@ class _ReminderPageState extends State<ReminderPage> {
 
     if (!confirmed) return;
 
-    final updated = reminders
-        .where((reminder) => reminder.id != item.id)
-        .toList();
+    final updated =
+        reminders.where((reminder) => reminder.id != item.id).toList();
     await LocalStore.saveReminders(updated);
     await NotificationService.cancelReminder(item);
 
