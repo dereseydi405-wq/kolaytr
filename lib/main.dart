@@ -1427,7 +1427,7 @@ class HomePage extends StatelessWidget {
             Expanded(
               child: StatCard(
                 icon: Icons.list_alt_outlined,
-                title: '220+',
+                title: '${procedures.length}+',
                 sub: 'İşlem rehberi',
               ),
             ),
@@ -1478,7 +1478,7 @@ class HomePage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '220+ işlem rehberi aktif',
+                      '${procedures.length}+ işlem rehberi aktif',
                       style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w900,

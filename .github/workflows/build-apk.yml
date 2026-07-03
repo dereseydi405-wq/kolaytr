@@ -21,37 +21,27 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Flutter version
-        run: flutter --version
-
-      - name: Check required secrets
+      - name: Check secrets
         run: |
-          if [ -z "${{ secrets.SUPABASE_URL }}" ]; then echo "SUPABASE_URL eksik"; exit 1; fi
-          if [ -z "${{ secrets.SUPABASE_PUBLISHABLE_KEY }}" ]; then echo "SUPABASE_PUBLISHABLE_KEY eksik"; exit 1; fi
-          if [ -z "${{ secrets.KEYSTORE_BASE64 }}" ]; then echo "KEYSTORE_BASE64 eksik"; exit 1; fi
-          if [ -z "${{ secrets.KEYSTORE_PASSWORD }}" ]; then echo "KEYSTORE_PASSWORD eksik"; exit 1; fi
-          if [ -z "${{ secrets.KEY_ALIAS }}" ]; then echo "KEY_ALIAS eksik"; exit 1; fi
-          if [ -z "${{ secrets.KEY_PASSWORD }}" ]; then echo "KEY_PASSWORD eksik"; exit 1; fi
-          echo "Tüm secrets hazır"
+          test -n "${{ secrets.SUPABASE_URL }}"
+          test -n "${{ secrets.SUPABASE_PUBLISHABLE_KEY }}"
+          test -n "${{ secrets.KEYSTORE_BASE64 }}"
+          test -n "${{ secrets.KEYSTORE_PASSWORD }}"
+          test -n "${{ secrets.KEY_ALIAS }}"
+          test -n "${{ secrets.KEY_PASSWORD }}"
 
       - name: Decode keystore
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/kolaytr-upload-key.jks
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/kolaytr-upload-key.jks
 
       - name: Create key.properties
         run: |
-          printf '%s\n' \
-            "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" \
-            "keyPassword=${{ secrets.KEY_PASSWORD }}" \
-            "keyAlias=${{ secrets.KEY_ALIAS }}" \
-            "storeFile=kolaytr-upload-key.jks" \
-            > android/key.properties
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=kolaytr-upload-key.jks" >> android/key.properties
 
       - name: Get packages
         run: flutter pub get
-
-      - name: Analyze
-        run: flutter analyze || true
 
       - name: Build signed release APK
         run: |
