@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'life_events.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tzData;
@@ -25,9 +26,7 @@ class KolayTRApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       locale: const Locale('tr', 'TR'),
-      supportedLocales: const [
-        Locale('tr', 'TR'),
-      ],
+      supportedLocales: const [Locale('tr', 'TR')],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -36,9 +35,7 @@ class KolayTRApp extends StatelessWidget {
       title: 'KolayTR',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2563EB),
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2563EB)),
         scaffoldBackgroundColor: const Color(0xFFF7F7FC),
         useMaterial3: true,
       ),
@@ -146,7 +143,6 @@ class LocalStore {
   static const String remindersKey = 'kolaytr_reminders_v1';
   static const String favoritesKey = 'kolaytr_favorites_v1';
 
-
   static Future<Set<String>> loadFavoritesDeviceOnly() async {
     final prefs = await SharedPreferences.getInstance();
     return (prefs.getStringList(favoritesKey) ?? []).toSet();
@@ -176,9 +172,7 @@ class LocalStore {
     return cloudFavorites;
   }
 
-  static Future<void> saveFavoritesDeviceOnly(
-    Set<String> favorites,
-  ) async {
+  static Future<void> saveFavoritesDeviceOnly(Set<String> favorites) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(favoritesKey, favorites.toList());
   }
@@ -220,9 +214,7 @@ class LocalStore {
       return decoded
           .whereType<Map>()
           .map(
-            (item) => SavedDocument.fromJson(
-              Map<String, dynamic>.from(item),
-            ),
+            (item) => SavedDocument.fromJson(Map<String, dynamic>.from(item)),
           )
           .toList();
     } catch (_) {
@@ -259,9 +251,7 @@ class LocalStore {
   ) async {
     final prefs = await SharedPreferences.getInstance();
 
-    final encoded = jsonEncode(
-      documents.map((item) => item.toJson()).toList(),
-    );
+    final encoded = jsonEncode(documents.map((item) => item.toJson()).toList());
 
     await prefs.setString(documentsKey, encoded);
   }
@@ -289,9 +279,7 @@ class LocalStore {
       return decoded
           .whereType<Map>()
           .map(
-            (item) => SavedReminder.fromJson(
-              Map<String, dynamic>.from(item),
-            ),
+            (item) => SavedReminder.fromJson(Map<String, dynamic>.from(item)),
           )
           .toList();
     } catch (_) {
@@ -328,9 +316,7 @@ class LocalStore {
   ) async {
     final prefs = await SharedPreferences.getInstance();
 
-    final encoded = jsonEncode(
-      reminders.map((item) => item.toJson()).toList(),
-    );
+    final encoded = jsonEncode(reminders.map((item) => item.toJson()).toList());
 
     await prefs.setString(remindersKey, encoded);
   }
@@ -341,12 +327,11 @@ class LocalStore {
   }
 }
 
-
-
 class CloudService {
   static const String supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-  static const String publishableKey =
-      String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
+  static const String publishableKey = String.fromEnvironment(
+    'SUPABASE_PUBLISHABLE_KEY',
+  );
 
   static bool initialized = false;
   static String? lastError;
@@ -411,10 +396,7 @@ class CloudService {
           .eq('id', 1)
           .maybeSingle();
 
-      await client!
-          .from('guide_procedures')
-          .select('id')
-          .limit(1);
+      await client!.from('guide_procedures').select('id').limit(1);
 
       final user = client!.auth.currentUser;
 
@@ -426,7 +408,6 @@ class CloudService {
     }
   }
 }
-
 
 class CloudDocumentService {
   static final RegExp _uuidPattern = RegExp(
@@ -500,9 +481,7 @@ class CloudDocumentService {
     try {
       final client = CloudService.client!;
 
-      final cloudRows = await client
-          .from('user_documents')
-          .select('id');
+      final cloudRows = await client.from('user_documents').select('id');
 
       final cloudIds = (cloudRows as List)
           .map((row) => Map<String, dynamic>.from(row as Map)['id'].toString())
@@ -528,9 +507,7 @@ class CloudDocumentService {
               .update(payload)
               .eq('id', document.id);
         } else {
-          await client
-              .from('user_documents')
-              .insert(payload);
+          await client.from('user_documents').insert(payload);
         }
       }
 
@@ -544,7 +521,6 @@ class CloudDocumentService {
     }
   }
 }
-
 
 class CloudReminderService {
   static final RegExp _uuidPattern = RegExp(
@@ -608,9 +584,7 @@ class CloudReminderService {
     try {
       final client = CloudService.client!;
 
-      final cloudRows = await client
-          .from('user_reminders')
-          .select('id');
+      final cloudRows = await client.from('user_reminders').select('id');
 
       final cloudIds = (cloudRows as List)
           .map((row) => Map<String, dynamic>.from(row as Map)['id'].toString())
@@ -636,9 +610,7 @@ class CloudReminderService {
               .update(payload)
               .eq('id', reminder.id);
         } else {
-          await client
-              .from('user_reminders')
-              .insert(payload);
+          await client.from('user_reminders').insert(payload);
         }
       }
 
@@ -652,7 +624,6 @@ class CloudReminderService {
     }
   }
 }
-
 
 class CloudFavoriteService {
   static bool get available {
@@ -728,8 +699,6 @@ class CloudFavoriteService {
     }
   }
 }
-
-
 
 class CloudGuideService {
   static bool loadedFromCloud = false;
@@ -865,8 +834,6 @@ class CloudGuideService {
   }
 }
 
-
-
 class NotificationService {
   static final FlutterLocalNotificationsPlugin plugin =
       FlutterLocalNotificationsPlugin();
@@ -875,16 +842,18 @@ class NotificationService {
     tzData.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Europe/Istanbul'));
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-
-    const settings = InitializationSettings(
-      android: androidSettings,
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
     );
+
+    const settings = InitializationSettings(android: androidSettings);
 
     await plugin.initialize(settings: settings);
 
-    final android = plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final android = plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
     await android?.requestExactAlarmsPermission();
   }
@@ -901,12 +870,12 @@ class NotificationService {
     return hash == 0 ? 1 : hash;
   }
 
-
   static Future<bool> ensureNotificationPermission() async {
     try {
       final androidPlugin = plugin
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+            AndroidFlutterLocalNotificationsPlugin
+          >();
 
       final granted = await androidPlugin?.requestNotificationsPermission();
 
@@ -961,6 +930,7 @@ class NotificationService {
   static Future<void> cancelReminder(SavedReminder reminder) async {
     await plugin.cancel(id: idFrom(reminderNotificationKey(reminder)));
   }
+
   static Future<void> showTestNotification() async {
     final notificationAllowed = await ensureNotificationPermission();
 
@@ -985,7 +955,6 @@ class NotificationService {
       notificationDetails: details,
     );
   }
-
 }
 
 List<Procedure> procedures = [
@@ -996,8 +965,16 @@ List<Procedure> procedures = [
     place: 'Nüfus ve Vatandaşlık İşleri',
     link: 'https://www.nvi.gov.tr',
     docs: ['Mevcut kimlik', 'Biyometrik fotoğraf', 'Başvuru ücret bilgisi'],
-    steps: ['Randevu al', 'Belgeleri hazırla', 'Nüfus müdürlüğüne git', 'Başvuruyu tamamla'],
-    warnings: ['Ücret ve belge şartları değişebilir', 'Resmi kaynağı kontrol et'],
+    steps: [
+      'Randevu al',
+      'Belgeleri hazırla',
+      'Nüfus müdürlüğüne git',
+      'Başvuruyu tamamla',
+    ],
+    warnings: [
+      'Ücret ve belge şartları değişebilir',
+      'Resmi kaynağı kontrol et',
+    ],
   ),
   Procedure(
     title: 'Ehliyet Yenileme',
@@ -1006,7 +983,12 @@ List<Procedure> procedures = [
     place: 'Nüfus Müdürlükleri',
     link: 'https://www.nvi.gov.tr',
     docs: ['Eski ehliyet', 'Kimlik', 'Sağlık raporu', 'Biyometrik fotoğraf'],
-    steps: ['Sağlık raporu al', 'Randevu oluştur', 'Belgeleri hazırla', 'Başvurunu yap'],
+    steps: [
+      'Sağlık raporu al',
+      'Randevu oluştur',
+      'Belgeleri hazırla',
+      'Başvurunu yap',
+    ],
     warnings: ['Sağlık raporu süresine dikkat et'],
   ),
   Procedure(
@@ -1015,8 +997,18 @@ List<Procedure> procedures = [
     desc: 'Pasaport alma veya pasaport yenileme rehberi.',
     place: 'Nüfus Müdürlükleri',
     link: 'https://www.nvi.gov.tr',
-    docs: ['Kimlik', 'Biyometrik fotoğraf', 'Harç ve defter bedeli bilgisi', 'Varsa eski pasaport'],
-    steps: ['Pasaport süresini seç', 'Ücreti kontrol et', 'Randevu al', 'Başvuruya git'],
+    docs: [
+      'Kimlik',
+      'Biyometrik fotoğraf',
+      'Harç ve defter bedeli bilgisi',
+      'Varsa eski pasaport',
+    ],
+    steps: [
+      'Pasaport süresini seç',
+      'Ücreti kontrol et',
+      'Randevu al',
+      'Başvuruya git',
+    ],
     warnings: ['Seyahat tarihinden önce yeterli süre bırak'],
   ),
   Procedure(
@@ -1026,7 +1018,12 @@ List<Procedure> procedures = [
     place: 'TÜVTÜRK',
     link: 'https://www.tuvturk.com.tr',
     docs: ['Ruhsat', 'Kimlik', 'Trafik sigortası', 'Egzoz emisyon gerekebilir'],
-    steps: ['Son tarihi kontrol et', 'Randevu al', 'Belgeleri hazırla', 'Aracı istasyona götür'],
+    steps: [
+      'Son tarihi kontrol et',
+      'Randevu al',
+      'Belgeleri hazırla',
+      'Aracı istasyona götür',
+    ],
     warnings: ['Gecikme cezası çıkabilir'],
   ),
   Procedure(
@@ -1036,7 +1033,11 @@ List<Procedure> procedures = [
     place: 'e-Devlet / SGK',
     link: 'https://www.turkiye.gov.tr',
     docs: ['e-Devlet girişi'],
-    steps: ['e-Devlet’e gir', 'SGK hizmet dökümü ara', 'Belgeyi görüntüle veya indir'],
+    steps: [
+      'e-Devlet’e gir',
+      'SGK hizmet dökümü ara',
+      'Belgeyi görüntüle veya indir',
+    ],
     warnings: ['Kişisel bilgilerini paylaşırken dikkatli ol'],
   ),
   Procedure(
@@ -1046,17 +1047,32 @@ List<Procedure> procedures = [
     place: 'e-Devlet / Nüfus',
     link: 'https://www.turkiye.gov.tr',
     docs: ['e-Devlet girişi'],
-    steps: ['e-Devlet’e gir', 'Yerleşim Yeri Belgesi ara', 'Belgeyi oluştur', 'PDF indir'],
+    steps: [
+      'e-Devlet’e gir',
+      'Yerleşim Yeri Belgesi ara',
+      'Belgeyi oluştur',
+      'PDF indir',
+    ],
     warnings: ['Barkodlu belge olduğundan emin ol'],
   ),
   Procedure(
     title: 'Tüketici Şikayeti',
     category: 'Haklar',
-    desc: 'Ayıplı ürün, iade, garanti ve hizmet sorunları için başvuru rehberi.',
+    desc:
+        'Ayıplı ürün, iade, garanti ve hizmet sorunları için başvuru rehberi.',
     place: 'Tüketici Hakem Heyeti / e-Devlet',
     link: 'https://www.turkiye.gov.tr',
-    docs: ['Fatura veya fiş', 'Garanti belgesi', 'Yazışmalar', 'Fotoğraf veya kanıt'],
-    steps: ['Sorunu açık yaz', 'Kanıtları hazırla', 'e-Devlet üzerinden başvur'],
+    docs: [
+      'Fatura veya fiş',
+      'Garanti belgesi',
+      'Yazışmalar',
+      'Fotoğraf veya kanıt',
+    ],
+    steps: [
+      'Sorunu açık yaz',
+      'Kanıtları hazırla',
+      'e-Devlet üzerinden başvur',
+    ],
     warnings: ['Kanıtları silme', 'Parasal limitler değişebilir'],
   ),
   Procedure(
@@ -1066,7 +1082,12 @@ List<Procedure> procedures = [
     place: 'MHRS',
     link: 'https://www.mhrs.gov.tr',
     docs: ['T.C. kimlik bilgisi', 'MHRS veya e-Devlet girişi'],
-    steps: ['MHRS’ye gir', 'İl, hastane ve poliklinik seç', 'Tarih seç', 'Randevuyu onayla'],
+    steps: [
+      'MHRS’ye gir',
+      'İl, hastane ve poliklinik seç',
+      'Tarih seç',
+      'Randevuyu onayla',
+    ],
     warnings: ['Gidemeyeceğin randevuyu iptal et'],
   ),
   Procedure(
@@ -1075,8 +1096,16 @@ List<Procedure> procedures = [
     desc: 'Yeni eve taşınırken elektrik aboneliği açtırma rehberi.',
     place: 'Elektrik dağıtım veya tedarik şirketi',
     link: 'https://www.turkiye.gov.tr',
-    docs: ['Kimlik', 'Kira sözleşmesi veya tapu', 'Sayaç veya tesisat numarası'],
-    steps: ['Sayaç bilgilerini hazırla', 'Başvuru yap', 'Güvence bedelini kontrol et'],
+    docs: [
+      'Kimlik',
+      'Kira sözleşmesi veya tapu',
+      'Sayaç veya tesisat numarası',
+    ],
+    steps: [
+      'Sayaç bilgilerini hazırla',
+      'Başvuru yap',
+      'Güvence bedelini kontrol et',
+    ],
     warnings: ['Eski abonelikleri kapatmayı unutma'],
   ),
   Procedure(
@@ -1162,12 +1191,12 @@ class _MainShellState extends State<MainShell> {
   }
 }
 
-
 class FavoriteProceduresSection extends StatefulWidget {
   const FavoriteProceduresSection({super.key});
 
   @override
-  State<FavoriteProceduresSection> createState() => _FavoriteProceduresSectionState();
+  State<FavoriteProceduresSection> createState() =>
+      _FavoriteProceduresSectionState();
 }
 
 class _FavoriteProceduresSectionState extends State<FavoriteProceduresSection> {
@@ -1182,7 +1211,10 @@ class _FavoriteProceduresSectionState extends State<FavoriteProceduresSection> {
 
   Future<void> loadFavorites() async {
     final titles = await LocalStore.loadFavorites();
-    final items = procedures.where((item) => titles.contains(item.title)).take(4).toList();
+    final items = procedures
+        .where((item) => titles.contains(item.title))
+        .take(4)
+        .toList();
 
     if (!mounted) return;
 
@@ -1202,7 +1234,8 @@ class _FavoriteProceduresSectionState extends State<FavoriteProceduresSection> {
       return const InfoBox(
         icon: Icons.star_border_outlined,
         title: 'Favori İşlemlerim',
-        text: 'Sık kullandığın işlemleri detay sayfasından favoriye ekleyebilirsin.',
+        text:
+            'Sık kullandığın işlemleri detay sayfasından favoriye ekleyebilirsin.',
       );
     }
 
@@ -1229,10 +1262,7 @@ class _FavoriteProceduresSectionState extends State<FavoriteProceduresSection> {
 class FavoriteButton extends StatefulWidget {
   final Procedure procedure;
 
-  const FavoriteButton({
-    super.key,
-    required this.procedure,
-  });
+  const FavoriteButton({super.key, required this.procedure});
 
   @override
   State<FavoriteButton> createState() => _FavoriteButtonState();
@@ -1291,8 +1321,6 @@ class _FavoriteButtonState extends State<FavoriteButton> {
   }
 }
 
-
-
 const String kolayTrRecentProceduresKey = 'kolaytr_recent_procedure_titles_v1';
 
 final ValueNotifier<List<String>> kolayTrRecentProcedureTitlesNotifier =
@@ -1326,7 +1354,6 @@ Future<void> kolayTrSaveRecentProcedure(Procedure procedure) async {
   kolayTrRecentProcedureTitlesLoaded = true;
   kolayTrRecentProcedureTitlesNotifier.value = updated;
 }
-
 
 IconData kolayTrHomeIconForCategory(String category) {
   switch (category) {
@@ -1368,19 +1395,17 @@ class HomePage extends StatelessWidget {
     ];
 
     final popularProcedures = [
-      ...popularTitles
-          .map((title) {
-            final wanted = kolayTrNormalizeSearch(title);
-            try {
-              return procedures.firstWhere((item) {
-                final itemTitle = kolayTrNormalizeSearch(item.title);
-                return itemTitle.contains(wanted) || wanted.contains(itemTitle);
-              });
-            } catch (_) {
-              return null;
-            }
-          })
-          .whereType<Procedure>(),
+      ...popularTitles.map((title) {
+        final wanted = kolayTrNormalizeSearch(title);
+        try {
+          return procedures.firstWhere((item) {
+            final itemTitle = kolayTrNormalizeSearch(item.title);
+            return itemTitle.contains(wanted) || wanted.contains(itemTitle);
+          });
+        } catch (_) {
+          return null;
+        }
+      }).whereType<Procedure>(),
       ...procedures,
     ];
 
@@ -1394,7 +1419,6 @@ class HomePage extends StatelessWidget {
       }
       if (uniquePopularProcedures.length >= 8) break;
     }
-
 
     return PageWrap(
       children: [
@@ -1429,68 +1453,70 @@ class HomePage extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 22),
+        const LifeEventsHomeCard(),
+        const SizedBox(height: 18),
         const UpcomingRemindersSection(),
 
         const SizedBox(height: 18),
 
         const FavoriteProceduresSection(),
         const SizedBox(height: 22),
-Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 24),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEFF3FF),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: const Color(0xFFDCE4FF)),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFDDE6FF),
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: const Icon(
-                          Icons.verified_rounded,
-                          color: Color(0xFF3158A4),
-                          size: 28,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '220+ işlem rehberi aktif',
-                              style: TextStyle(
-                                fontSize: 19,
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFF1F2330),
-                              ),
-                            ),
-                            SizedBox(height: 6),
-                            Text(
-                              'Resmi kurumlara yönlendiren akıllı işlem rehberi.',
-                              style: TextStyle(
-                                fontSize: 15,
-                                height: 1.35,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF555A68),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 24),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEFF3FF),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFDCE4FF)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDDE6FF),
+                  borderRadius: BorderRadius.circular(18),
                 ),
-                const SizedBox(height: 4),
+                child: const Icon(
+                  Icons.verified_rounded,
+                  color: Color(0xFF3158A4),
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '220+ işlem rehberi aktif',
+                      style: TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF1F2330),
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      'Resmi kurumlara yönlendiren akıllı işlem rehberi.',
+                      style: TextStyle(
+                        fontSize: 15,
+                        height: 1.35,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF555A68),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
 
-                        const Text(
+        const Text(
           'Bugün ne yapmak istiyorsun?',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
         ),
@@ -1503,169 +1529,175 @@ Container(
           }).toList(),
         ),
         const SizedBox(height: 22),
-FutureBuilder<void>(
-                  future: kolayTrEnsureRecentProcedureTitlesLoaded(),
-                  builder: (context, _) {
-                    return ValueListenableBuilder<List<String>>(
-                      valueListenable: kolayTrRecentProcedureTitlesNotifier,
-                      builder: (context, recentTitles, __) {
-                        final recentProcedures = <Procedure>[];
+        FutureBuilder<void>(
+          future: kolayTrEnsureRecentProcedureTitlesLoaded(),
+          builder: (context, _) {
+            return ValueListenableBuilder<List<String>>(
+              valueListenable: kolayTrRecentProcedureTitlesNotifier,
+              builder: (context, recentTitles, __) {
+                final recentProcedures = <Procedure>[];
 
-                        for (final title in recentTitles) {
-                          try {
-                            final normalizedTitle =
-                                kolayTrNormalizeSearch(title);
-                            final item = procedures.firstWhere(
-                              (procedure) =>
-                                  kolayTrNormalizeSearch(procedure.title) ==
-                                  normalizedTitle,
-                            );
-                            recentProcedures.add(item);
-                          } catch (_) {}
-                        }
-
-                        if (recentProcedures.isEmpty) {
-                          return const SizedBox.shrink();
-                        }
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Son Bakılan İşlemler',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFF1F2330),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            ...recentProcedures.map(
-                              (item) => ProcedureCard(procedure: item),
-                            ),
-                            const SizedBox(height: 22),
-                          ],
-                        );
-                      },
+                for (final title in recentTitles) {
+                  try {
+                    final normalizedTitle = kolayTrNormalizeSearch(title);
+                    final item = procedures.firstWhere(
+                      (procedure) =>
+                          kolayTrNormalizeSearch(procedure.title) ==
+                          normalizedTitle,
                     );
-                  },
-                ),
+                    recentProcedures.add(item);
+                  } catch (_) {}
+                }
 
-const Text(
-                  'Kategori İşlem Sayıları',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF1F2330),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final itemWidth = (constraints.maxWidth - 12) / 2;
+                if (recentProcedures.isEmpty) {
+                  return const SizedBox.shrink();
+                }
 
-                    return Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: <String>['Kimlik', 'Araç', 'Ev', 'Sağlık', 'Belge', 'Haklar'].map((category) {
-                        final normalizedCategory = kolayTrNormalizeSearch(category);
-                        final count = procedures
-                            .where(
-                              (item) =>
-                                  kolayTrNormalizeSearch(item.category) ==
-                                  normalizedCategory,
-                            )
-                            .length;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Son Bakılan İşlemler',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF1F2330),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ...recentProcedures.map(
+                      (item) => ProcedureCard(procedure: item),
+                    ),
+                    const SizedBox(height: 22),
+                  ],
+                );
+              },
+            );
+          },
+        ),
 
-                        return SizedBox(
-                          width: itemWidth,
-                          child: InkWell(
+        const Text(
+          'Kategori İşlem Sayıları',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF1F2330),
+          ),
+        ),
+        const SizedBox(height: 16),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final itemWidth = (constraints.maxWidth - 12) / 2;
+
+            return Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children:
+                  <String>[
+                    'Kimlik',
+                    'Araç',
+                    'Ev',
+                    'Sağlık',
+                    'Belge',
+                    'Haklar',
+                  ].map((category) {
+                    final normalizedCategory = kolayTrNormalizeSearch(category);
+                    final count = procedures
+                        .where(
+                          (item) =>
+                              kolayTrNormalizeSearch(item.category) ==
+                              normalizedCategory,
+                        )
+                        .length;
+
+                    return SizedBox(
+                      width: itemWidth,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(22),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  GuidePage(initialCategory: category),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF7F7FB),
                             borderRadius: BorderRadius.circular(22),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      GuidePage(initialCategory: category),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF7F7FB),
-                                borderRadius: BorderRadius.circular(22),
-                                border: Border.all(
-                                  color: const Color(0xFFE0E1E8),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.04),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
+                            border: Border.all(color: const Color(0xFFE0E1E8)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
                               ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 42,
-                                    height: 42,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFE9EEFF),
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: Icon(
-                                      kolayTrHomeIconForCategory(category),
-                                      color: const Color(0xFF3158A4),
-                                      size: 24,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          category,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w900,
-                                            color: Color(0xFF1F2330),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          '$count işlem',
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w700,
-                                            color: Color(0xFF666B78),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            ],
                           ),
-                        );
-                      }).toList(),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 42,
+                                height: 42,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE9EEFF),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Icon(
+                                  kolayTrHomeIconForCategory(category),
+                                  color: const Color(0xFF3158A4),
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      category,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w900,
+                                        color: Color(0xFF1F2330),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '$count işlem',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF666B78),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     );
-                  },
-                ),
-                const SizedBox(height: 28),
+                  }).toList(),
+            );
+          },
+        ),
+        const SizedBox(height: 28),
 
-                                        const Text(
+        const Text(
           'Popüler İşlemler',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
         ),
         const SizedBox(height: 10),
-        ...uniquePopularProcedures.take(8).map((item) => ProcedureCard(procedure: item)),
+        ...uniquePopularProcedures
+            .take(8)
+            .map((item) => ProcedureCard(procedure: item)),
         const InfoBox(
           icon: Icons.info_outline,
           title: 'Yasal Uyarı',
@@ -1676,7 +1708,6 @@ const Text(
     );
   }
 }
-
 
 class UpcomingRemindersSection extends StatefulWidget {
   const UpcomingRemindersSection({super.key});
@@ -1777,10 +1808,7 @@ class _UpcomingRemindersSectionState extends State<UpcomingRemindersSection> {
             SizedBox(width: 8),
             Text(
               'Yaklaşan Hatırlatıcılar',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
           ],
         ),
@@ -1788,9 +1816,7 @@ class _UpcomingRemindersSectionState extends State<UpcomingRemindersSection> {
         ...reminders.map(
           (item) => Card(
             child: ListTile(
-              leading: const CircleAvatar(
-                child: Icon(Icons.schedule_outlined),
-              ),
+              leading: const CircleAvatar(child: Icon(Icons.schedule_outlined)),
               title: Text(
                 item.title,
                 maxLines: 1,
@@ -1816,7 +1842,6 @@ class _UpcomingRemindersSectionState extends State<UpcomingRemindersSection> {
     );
   }
 }
-
 
 String kolayTrNormalizeSearch(String value) {
   var s = value
@@ -1934,7 +1959,16 @@ List<String> kolayTrSmartSearchTerms(String value) {
   );
 
   addWhen(
-    ['sgk', 'emekli', 'emeklilik', 'issizlik', 'işsizlik', 'hak', 'yardim', 'yardım'],
+    [
+      'sgk',
+      'emekli',
+      'emeklilik',
+      'issizlik',
+      'işsizlik',
+      'hak',
+      'yardim',
+      'yardım',
+    ],
     [
       'sgk',
       'hak',
@@ -1962,7 +1996,17 @@ List<String> kolayTrSmartSearchTerms(String value) {
   );
 
   addWhen(
-    ['okul', 'ogrenci', 'öğrenci', 'egitim', 'eğitim', 'sinav', 'sınav', 'universite', 'üniversite'],
+    [
+      'okul',
+      'ogrenci',
+      'öğrenci',
+      'egitim',
+      'eğitim',
+      'sinav',
+      'sınav',
+      'universite',
+      'üniversite',
+    ],
     [
       'egitim',
       'eğitim',
@@ -2060,10 +2104,7 @@ List<String> kolayTrSmartSearchTerms(String value) {
 class GuidePage extends StatefulWidget {
   final String initialCategory;
 
-  const GuidePage({
-    super.key,
-    this.initialCategory = 'Tümü',
-  });
+  const GuidePage({super.key, this.initialCategory = 'Tümü'});
 
   @override
   State<GuidePage> createState() => _GuidePageState();
@@ -2094,8 +2135,13 @@ class _GuidePageState extends State<GuidePage> {
 
       final title = kolayTrNormalizeSearch(item.title);
       final category = kolayTrNormalizeSearch(item.category);
-      final searchableText = kolayTrNormalizeSearch('${item.title} ${item.category}');
-      final titleWords = title.split(' ').where((word) => word.isNotEmpty).toList();
+      final searchableText = kolayTrNormalizeSearch(
+        '${item.title} ${item.category}',
+      );
+      final titleWords = title
+          .split(' ')
+          .where((word) => word.isNotEmpty)
+          .toList();
 
       // 1) Başlık yazılan harf/kelimeyle başlıyorsa en üstte
       // Örn: a -> Araç, Acil, Adalet
@@ -2247,12 +2293,8 @@ class _GuidePageState extends State<GuidePage> {
   }
 }
 
-
 class DetailPage extends StatelessWidget {
-  const DetailPage({
-    super.key,
-    required this.procedure,
-  });
+  const DetailPage({super.key, required this.procedure});
 
   final Procedure procedure;
 
@@ -2285,10 +2327,7 @@ class DetailPage extends StatelessWidget {
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFFEEF3FF),
-                    Color(0xFFFFFFFF),
-                  ],
+                  colors: [Color(0xFFEEF3FF), Color(0xFFFFFFFF)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -2394,17 +2433,13 @@ class DetailPage extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => AddDocumentPage(),
-                          ),
+                          MaterialPageRoute(builder: (_) => AddDocumentPage()),
                         );
                       },
                       icon: const Icon(Icons.add_rounded),
                       label: const Text(
                         'Belge çantasına ekle',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w900,
-                        ),
+                        style: TextStyle(fontWeight: FontWeight.w900),
                       ),
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size.fromHeight(52),
@@ -2519,10 +2554,7 @@ class DetailPage extends StatelessWidget {
                 icon: const Icon(Icons.open_in_new_rounded),
                 label: const Text(
                   'Resmi siteye git',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
                 ),
               ),
             ),
@@ -2561,11 +2593,7 @@ class _KolayTrOfficialWarningCard extends StatelessWidget {
       child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.verified_outlined,
-            color: Color(0xFF167A3D),
-            size: 28,
-          ),
+          Icon(Icons.verified_outlined, color: Color(0xFF167A3D), size: 28),
           SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -2623,11 +2651,7 @@ class _KolayTrInfoCard extends StatelessWidget {
                   color: const Color(0xFFF1F4FF),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(
-                  icon,
-                  color: const Color(0xFF3158A4),
-                  size: 24,
-                ),
+                child: Icon(icon, color: const Color(0xFF3158A4), size: 24),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -2650,11 +2674,8 @@ class _KolayTrInfoCard extends StatelessWidget {
   }
 }
 
-
 class _KolayTrDocumentCheckTile extends StatelessWidget {
-  const _KolayTrDocumentCheckTile({
-    required this.text,
-  });
+  const _KolayTrDocumentCheckTile({required this.text});
 
   final String text;
 
@@ -2666,9 +2687,7 @@ class _KolayTrDocumentCheckTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF7F9FF),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFFDDE5FF),
-        ),
+        border: Border.all(color: const Color(0xFFDDE5FF)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2703,7 +2722,6 @@ class _KolayTrDocumentCheckTile extends StatelessWidget {
     );
   }
 }
-
 
 class _KolayTrStepTile extends StatelessWidget {
   const _KolayTrStepTile({
@@ -2771,7 +2789,6 @@ class _KolayTrStepTile extends StatelessWidget {
   }
 }
 
-
 class DocumentBagPage extends StatefulWidget {
   const DocumentBagPage({super.key});
 
@@ -2809,7 +2826,6 @@ class _DocumentBagPageState extends State<DocumentBagPage> {
 
     if (!confirmed) return;
 
-
     final updated = documents.where((doc) => doc.id != item.id).toList();
     await LocalStore.saveDocuments(updated);
 
@@ -2819,15 +2835,15 @@ class _DocumentBagPageState extends State<DocumentBagPage> {
       documents = updated;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Belge silindi.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Belge silindi.')));
   }
 
   Future<void> openAddDocument() async {
-    final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const AddDocumentPage()),
-    );
+    final result = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const AddDocumentPage()));
 
     if (result == true) {
       await loadDocuments();
@@ -2925,7 +2941,8 @@ class _DocumentBagPageState extends State<DocumentBagPage> {
                     onTap: () async {
                       final result = await Navigator.of(context).push<bool>(
                         MaterialPageRoute(
-                          builder: (_) => AddDocumentPage(existingDocument: item),
+                          builder: (_) =>
+                              AddDocumentPage(existingDocument: item),
                         ),
                       );
 
@@ -2947,10 +2964,7 @@ class _DocumentBagPageState extends State<DocumentBagPage> {
 class AddDocumentPage extends StatefulWidget {
   final SavedDocument? existingDocument;
 
-  const AddDocumentPage({
-    super.key,
-    this.existingDocument,
-  });
+  const AddDocumentPage({super.key, this.existingDocument});
 
   @override
   State<AddDocumentPage> createState() => _AddDocumentPageState();
@@ -2999,9 +3013,9 @@ class _AddDocumentPageState extends State<AddDocumentPage> {
     final title = titleController.text.trim();
 
     if (title.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Belge adı boş olamaz.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Belge adı boş olamaz.')));
       return;
     }
 
@@ -3015,7 +3029,8 @@ class _AddDocumentPageState extends State<AddDocumentPage> {
       title: title,
       category: category,
       note: noteController.text.trim(),
-      createdAt: existing?.createdAt ??
+      createdAt:
+          existing?.createdAt ??
           '${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}',
     );
 
@@ -3050,13 +3065,17 @@ class _AddDocumentPageState extends State<AddDocumentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.existingDocument == null ? 'Belge Ekle' : 'Belgeyi Düzenle'),
+        title: Text(
+          widget.existingDocument == null ? 'Belge Ekle' : 'Belgeyi Düzenle',
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            widget.existingDocument == null ? 'Yeni Belge Kaydı' : 'Belgeyi Düzenle',
+            widget.existingDocument == null
+                ? 'Yeni Belge Kaydı'
+                : 'Belgeyi Düzenle',
             style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 8),
@@ -3081,10 +3100,7 @@ class _AddDocumentPageState extends State<AddDocumentPage> {
               border: OutlineInputBorder(),
             ),
             items: categories.map((item) {
-              return DropdownMenuItem(
-                value: item,
-                child: Text(item),
-              );
+              return DropdownMenuItem(value: item, child: Text(item));
             }).toList(),
             onChanged: (value) {
               if (value == null) return;
@@ -3107,7 +3123,9 @@ class _AddDocumentPageState extends State<AddDocumentPage> {
           FilledButton.icon(
             onPressed: saveDocument,
             icon: const Icon(Icons.save_outlined),
-            label: Text(widget.existingDocument == null ? 'Kaydet' : 'Güncelle'),
+            label: Text(
+              widget.existingDocument == null ? 'Kaydet' : 'Güncelle',
+            ),
           ),
         ],
       ),
@@ -3152,8 +3170,9 @@ class _ReminderPageState extends State<ReminderPage> {
 
     if (!confirmed) return;
 
-
-    final updated = reminders.where((reminder) => reminder.id != item.id).toList();
+    final updated = reminders
+        .where((reminder) => reminder.id != item.id)
+        .toList();
     await LocalStore.saveReminders(updated);
     await NotificationService.cancelReminder(item);
 
@@ -3163,15 +3182,15 @@ class _ReminderPageState extends State<ReminderPage> {
       reminders = updated;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Hatırlatıcı silindi.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Hatırlatıcı silindi.')));
   }
 
   Future<void> openAddReminder() async {
-    final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const AddReminderPage()),
-    );
+    final result = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const AddReminderPage()));
 
     if (result == true) {
       await loadReminders();
@@ -3276,7 +3295,8 @@ class _ReminderPageState extends State<ReminderPage> {
                     onTap: () async {
                       final result = await Navigator.of(context).push<bool>(
                         MaterialPageRoute(
-                          builder: (_) => AddReminderPage(existingReminder: item),
+                          builder: (_) =>
+                              AddReminderPage(existingReminder: item),
                         ),
                       );
 
@@ -3418,16 +3438,16 @@ class _AddReminderPageState extends State<AddReminderPage> {
     }
 
     if (selectedDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lütfen tarih seç.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Lütfen tarih seç.')));
       return;
     }
 
     if (selectedTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lütfen saat seç.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Lütfen saat seç.')));
       return;
     }
 
@@ -3463,7 +3483,9 @@ class _AddReminderPageState extends State<AddReminderPage> {
     } else {
       await NotificationService.cancelReminder(existing);
 
-      final index = reminders.indexWhere((reminder) => reminder.id == existing.id);
+      final index = reminders.indexWhere(
+        (reminder) => reminder.id == existing.id,
+      );
 
       if (index == -1) {
         reminders.add(item);
@@ -3482,7 +3504,9 @@ class _AddReminderPageState extends State<AddReminderPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          existing == null ? 'Hatırlatıcı kaydedildi.' : 'Hatırlatıcı güncellendi.',
+          existing == null
+              ? 'Hatırlatıcı kaydedildi.'
+              : 'Hatırlatıcı güncellendi.',
         ),
       ),
     );
@@ -3494,13 +3518,19 @@ class _AddReminderPageState extends State<AddReminderPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.existingReminder == null ? 'Hatırlatıcı Ekle' : 'Hatırlatıcıyı Düzenle'),
+        title: Text(
+          widget.existingReminder == null
+              ? 'Hatırlatıcı Ekle'
+              : 'Hatırlatıcıyı Düzenle',
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            widget.existingReminder == null ? 'Yeni Hatırlatıcı' : 'Hatırlatıcıyı Düzenle',
+            widget.existingReminder == null
+                ? 'Yeni Hatırlatıcı'
+                : 'Hatırlatıcıyı Düzenle',
             style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 8),
@@ -3525,10 +3555,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
               border: OutlineInputBorder(),
             ),
             items: categories.map((item) {
-              return DropdownMenuItem(
-                value: item,
-                child: Text(item),
-              );
+              return DropdownMenuItem(value: item, child: Text(item));
             }).toList(),
             onChanged: (value) {
               if (value == null) return;
@@ -3571,7 +3598,9 @@ class _AddReminderPageState extends State<AddReminderPage> {
           FilledButton.icon(
             onPressed: saveReminder,
             icon: const Icon(Icons.save_outlined),
-            label: Text(widget.existingReminder == null ? 'Kaydet' : 'Güncelle'),
+            label: Text(
+              widget.existingReminder == null ? 'Kaydet' : 'Güncelle',
+            ),
           ),
         ],
       ),
@@ -3632,8 +3661,6 @@ IconData iconForReminder(String category) {
   }
 }
 
-
-
 Future<bool> confirmDeleteAction(
   BuildContext context, {
   required String title,
@@ -3671,21 +3698,18 @@ Future<void> openExternalUrl(BuildContext context, String url) async {
   final uri = Uri.tryParse(url);
 
   if (uri == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Link açılamadı.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Link açılamadı.')));
     return;
   }
 
-  final opened = await launchUrl(
-    uri,
-    mode: LaunchMode.externalApplication,
-  );
+  final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
 
   if (!opened && context.mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Resmi site açılamadı.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Resmi site açılamadı.')));
   }
 }
 
@@ -3704,7 +3728,7 @@ class SettingsPage extends StatelessWidget {
         const SimpleTile(
           icon: Icons.apps,
           title: 'KolayTR',
-          subtitle: 'Belgeler v2.6.5'
+          subtitle: 'Belgeler v2.6.5',
         ),
         const Divider(),
         SimpleTile(
@@ -3726,9 +3750,9 @@ class SettingsPage extends StatelessWidget {
 
             if (!context.mounted) return;
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(result)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(result)));
           },
         ),
         SimpleTile(
@@ -3801,10 +3825,7 @@ class SettingsPage extends StatelessWidget {
 class PageWrap extends StatelessWidget {
   final List<Widget> children;
 
-  const PageWrap({
-    super.key,
-    required this.children,
-  });
+  const PageWrap({super.key, required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -3829,20 +3850,13 @@ class HeroBox extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF2563EB),
-            Color(0xFF0F766E),
-          ],
+          colors: [Color(0xFF2563EB), Color(0xFF0F766E)],
         ),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.verified_user_outlined,
-            color: Colors.white,
-            size: 42,
-          ),
+          Icon(Icons.verified_user_outlined, color: Colors.white, size: 42),
           SizedBox(height: 16),
           Text(
             'İşini kolayca çöz.',
@@ -3855,11 +3869,7 @@ class HeroBox extends StatelessWidget {
           SizedBox(height: 10),
           Text(
             'Resmi işlemler, belgeler, hatırlatıcılar ve günlük hayat rehberi tek yerde.',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              height: 1.45,
-            ),
+            style: TextStyle(color: Colors.white, fontSize: 16, height: 1.45),
           ),
         ],
       ),
@@ -3870,10 +3880,7 @@ class HeroBox extends StatelessWidget {
 class QuickChip extends StatelessWidget {
   final String category;
 
-  const QuickChip({
-    super.key,
-    required this.category,
-  });
+  const QuickChip({super.key, required this.category});
 
   @override
   Widget build(BuildContext context) {
@@ -3894,19 +3901,14 @@ class QuickChip extends StatelessWidget {
 class ProcedureCard extends StatelessWidget {
   final Procedure procedure;
 
-  const ProcedureCard({
-    super.key,
-    required this.procedure,
-  });
+  const ProcedureCard({super.key, required this.procedure});
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 1.5,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -3921,10 +3923,7 @@ class ProcedureCard extends StatelessWidget {
         ),
         title: Text(
           procedure.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w900,
-            fontSize: 17,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4),
@@ -3933,9 +3932,7 @@ class ProcedureCard extends StatelessWidget {
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
           Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => DetailPage(procedure: procedure),
-            ),
+            MaterialPageRoute(builder: (_) => DetailPage(procedure: procedure)),
           );
         },
       ),
@@ -3958,9 +3955,7 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -3970,10 +3965,7 @@ class StatCard extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               title,
-              style: const TextStyle(
-                fontWeight: FontWeight.w900,
-                fontSize: 20,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 20),
             ),
             Text(sub),
           ],
@@ -4018,10 +4010,7 @@ class InfoBox extends StatelessWidget {
                   style: const TextStyle(fontWeight: FontWeight.w900),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  text,
-                  style: const TextStyle(height: 1.35),
-                ),
+                Text(text, style: const TextStyle(height: 1.35)),
               ],
             ),
           ),
@@ -4047,9 +4036,7 @@ class SectionBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 14),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -4069,27 +4056,25 @@ class SectionBox extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            ...items.asMap().entries.map(
-              (entry) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CircleAvatar(
-                        radius: 12,
-                        child: Text(
-                          '${entry.key + 1}',
-                          style: const TextStyle(fontSize: 12),
-                        ),
+            ...items.asMap().entries.map((entry) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: 12,
+                      child: Text(
+                        '${entry.key + 1}',
+                        style: const TextStyle(fontSize: 12),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(child: Text(entry.value)),
-                    ],
-                  ),
-                );
-              },
-            ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(entry.value)),
+                  ],
+                ),
+              );
+            }),
           ],
         ),
       ),
@@ -4115,19 +4100,11 @@ class SimpleTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Icon(icon),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w800),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
         subtitle: Text(subtitle),
         trailing: onTap == null ? null : const Icon(Icons.chevron_right),
         onTap: onTap,
@@ -4140,11 +4117,7 @@ class TextPage extends StatelessWidget {
   final String title;
   final String text;
 
-  const TextPage({
-    super.key,
-    required this.title,
-    required this.text,
-  });
+  const TextPage({super.key, required this.title, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -4158,10 +4131,7 @@ class TextPage extends StatelessWidget {
             style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 14),
-          Text(
-            text,
-            style: const TextStyle(fontSize: 16, height: 1.5),
-          ),
+          Text(text, style: const TextStyle(fontSize: 16, height: 1.5)),
         ],
       ),
     );
