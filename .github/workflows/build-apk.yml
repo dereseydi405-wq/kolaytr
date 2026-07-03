@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build Android APK
+    name: Build Signed Android APK
     runs-on: ubuntu-latest
 
     steps:
@@ -24,17 +24,196 @@ jobs:
       - name: Flutter version
         run: flutter --version
 
+      - name: Check required secrets
+        run: |
+          if [ -z "${{ secrets.SUPABASE_URL }}" ]; then echo "SUPABASE_URL eksik"; exit 1; fi
+          if [ -z "${{ secrets.SUPABASE_PUBLISHABLE_KEY }}" ]; then echo "SUPABASE_PUBLISHABLE_KEY eksik"; exit 1; fi
+          if [ -z "${{ secrets.KEYSTORE_BASE64 }}" ]; then echo "KEYSTORE_BASE64 eksik"; exit 1; fi
+          if [ -z "${{ secrets.KEYSTORE_PASSWORD }}" ]; then echo "KEYSTORE_PASSWORD eksik"; exit 1; fi
+          if [ -z "${{ secrets.KEY_ALIAS }}" ]; then echo "KEY_ALIAS eksik"; exit 1; fi
+          if [ -z "${{ secrets.KEY_PASSWORD }}" ]; then echo "KEY_PASSWORD eksik"; exit 1; fi
+          echo "Tüm secrets hazır"
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/kolaytr-upload-key.jks
+
+      - name: Create key.properties
+        run: |
+          cat > android/key.properties <<EOF2
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=kolaytr-upload-key.jks
+          EOF2
+
+      - name: Configure Android signing
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          kts = Path("android/app/build.gradle.kts")
+          groovy = Path("android/app/build.gradle")
+
+          if kts.exists():
+              s = kts.read_text()
+
+              if "import java.util.Properties" not in s:
+                  s = "import java.util.Properties\nimport java.io.FileInputStream\n\n" + s
+
+              if "val keystoreProperties = Properties()" not in s:
+                  insert = """val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
+"""
+                  marker = "android {"
+                  s = s.replace(marker, insert + marker, 1)
+
+              if "isCoreLibraryDesugaringEnabled = true" not in s:
+                  s = s.replace(
+                      "compileOptions {",
+                      "compileOptions {\n        isCoreLibraryDesugaringEnabled = true",
+                      1,
+                  )
+
+              if "coreLibraryDesugaring(\"com.android.tools:desugar_jdk_libs" not in s:
+                  if "dependencies {" in s:
+                      s = s.replace(
+                          "dependencies {",
+                          "dependencies {\n    coreLibraryDesugaring(\"com.android.tools:desugar_jdk_libs:2.1.4\")",
+                          1,
+                      )
+                  else:
+                      s += """
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+}
+"""
+
+              if "minSdk = 23" not in s:
+                  s = s.replace("minSdk = flutter.minSdkVersion", "minSdk = 23")
+
+              if "signingConfigs {" not in s:
+                  s = s.replace(
+                      "defaultConfig {",
+                      """signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
+        }
+    }
+
+    defaultConfig {""",
+                      1,
+                  )
+
+              s = s.replace(
+                  "signingConfig = signingConfigs.getByName(\"debug\")",
+                  "signingConfig = signingConfigs.getByName(\"release\")",
+              )
+
+              if "signingConfig = signingConfigs.getByName(\"release\")" not in s:
+                  s = s.replace(
+                      "buildTypes {\n        release {",
+                      "buildTypes {\n        release {\n            signingConfig = signingConfigs.getByName(\"release\")",
+                      1,
+                  )
+
+              kts.write_text(s)
+
+          elif groovy.exists():
+              s = groovy.read_text()
+
+              if "def keystoreProperties" not in s:
+                  s = """def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+""" + s
+
+              if "coreLibraryDesugaringEnabled true" not in s:
+                  s = s.replace(
+                      "compileOptions {",
+                      "compileOptions {\n        coreLibraryDesugaringEnabled true",
+                      1,
+                  )
+
+              if "coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs" not in s:
+                  if "dependencies {" in s:
+                      s = s.replace(
+                          "dependencies {",
+                          "dependencies {\n    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'",
+                          1,
+                      )
+                  else:
+                      s += """
+
+dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
+}
+"""
+
+              if "minSdkVersion 23" not in s:
+                  s = s.replace("minSdkVersion flutter.minSdkVersion", "minSdkVersion 23")
+
+              if "signingConfigs {" not in s:
+                  s = s.replace(
+                      "defaultConfig {",
+                      """signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
+    }
+
+    defaultConfig {""",
+                      1,
+                  )
+
+              s = s.replace("signingConfig signingConfigs.debug", "signingConfig signingConfigs.release")
+
+              if "signingConfig signingConfigs.release" not in s:
+                  s = s.replace(
+                      "buildTypes {\n        release {",
+                      "buildTypes {\n        release {\n            signingConfig signingConfigs.release",
+                      1,
+                  )
+
+              groovy.write_text(s)
+
+          else:
+              raise SystemExit("Gradle dosyası bulunamadı")
+          PY
+
       - name: Get packages
         run: flutter pub get
 
       - name: Analyze
         run: flutter analyze || true
 
-      - name: Build debug APK
-        run: flutter build apk --debug
+      - name: Build signed release APK
+        run: |
+          flutter build apk --release --no-tree-shake-icons \
+            --dart-define=SUPABASE_URL="${{ secrets.SUPABASE_URL }}" \
+            --dart-define=SUPABASE_PUBLISHABLE_KEY="${{ secrets.SUPABASE_PUBLISHABLE_KEY }}"
 
-      - name: Upload debug APK
+      - name: Verify APK signature
+        run: |
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -n 1)
+          "$APKSIGNER" verify --verbose --print-certs build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload signed release APK
         uses: actions/upload-artifact@v4
         with:
-          name: kolaytr-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: kolaytr-signed-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
