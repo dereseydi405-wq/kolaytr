@@ -1427,7 +1427,7 @@ class HomePage extends StatelessWidget {
             Expanded(
               child: StatCard(
                 icon: Icons.list_alt_outlined,
-                title: '${procedures.length}+',
+                title: '220+',
                 sub: 'İşlem rehberi',
               ),
             ),
