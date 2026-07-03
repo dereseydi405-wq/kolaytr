@@ -1,0 +1,103 @@
+name: Build KolayTR APK AAB
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Create Flutter project
+        run: flutter create --project-name kolaytr --org com.kolaytr .
+
+      - name: Apply KolayTR source
+        run: cp kolaytr_main.dart lib/main.dart
+
+      - name: Check logo file
+        run: test -f assets/icon/app_icon.png
+
+      - name: Add app packages
+        run: |
+          flutter pub add shared_preferences
+          flutter pub add url_launcher
+          flutter pub add supabase_flutter
+          flutter pub add flutter_localizations --sdk=flutter
+          flutter pub add intl
+          flutter pub add flutter_local_notifications
+          flutter pub add timezone
+          flutter pub add flutter_timezone
+          flutter pub add --dev flutter_launcher_icons flutter_native_splash
+
+      - name: Write icon and splash config
+        run: |
+          printf '\n' >> pubspec.yaml
+          printf 'flutter_launcher_icons:\n' >> pubspec.yaml
+          printf '  android: true\n' >> pubspec.yaml
+          printf '  ios: false\n' >> pubspec.yaml
+          printf '  image_path: assets/icon/app_icon.png\n' >> pubspec.yaml
+          printf '  adaptive_icon_background: "#FFFFFF"\n' >> pubspec.yaml
+          printf '  adaptive_icon_foreground: assets/icon/app_icon.png\n' >> pubspec.yaml
+          printf '  adaptive_icon_foreground_inset: 14\n' >> pubspec.yaml
+          printf '  min_sdk_android: 23\n' >> pubspec.yaml
+          printf '\n' >> pubspec.yaml
+          printf 'flutter_native_splash:\n' >> pubspec.yaml
+          printf '  color: "#FFFFFF"\n' >> pubspec.yaml
+          printf '  image: assets/icon/app_icon.png\n' >> pubspec.yaml
+          printf '  android: true\n' >> pubspec.yaml
+          printf '  ios: false\n' >> pubspec.yaml
+          printf '  fullscreen: true\n' >> pubspec.yaml
+
+      - name: Configure Android release
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: python3 .github/scripts/configure_android_release.py
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Generate launcher icon
+        run: dart run flutter_launcher_icons
+
+      - name: Generate splash screen
+        run: dart run flutter_native_splash:create
+
+      - name: Build signed APK
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: flutter build apk --release --build-name=2.3.0 --build-number=23 --dart-define=SUPABASE_URL=$SUPABASE_URL --dart-define=SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY
+
+      - name: Build signed AAB
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: flutter build appbundle --release --build-name=2.3.0 --build-number=23 --dart-define=SUPABASE_URL=$SUPABASE_URL --dart-define=SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY
+
+      - name: Prepare signed release files
+        run: |
+          mkdir -p release
+          cp build/app/outputs/flutter-apk/app-release.apk release/kolaytr-v2.3.0-signed.apk
+          cp build/app/outputs/bundle/release/app-release.aab release/kolaytr-v2.3.0-signed.aab
+
+      - name: Upload files
+        uses: actions/upload-artifact@v4
+        with:
+          name: kolaytr-v2-3-signed-apk-aab
+          path: |
+            release/kolaytr-v2.3.0-signed.apk
+            release/kolaytr-v2.3.0-signed.aab

@@ -1,0 +1,17 @@
+
+# KolayTR signing secrets
+kolaytr-upload-key.jks
+kolaytr-upload-key.base64
+kolaytr-signing-secrets.txt
+key.properties
+*.jks
+*.keystore
+*.zip
+build_log.txt
+*.backup.yaml
+*.bak
+*backup*
+.dart_tool/
+build/
+.flutter-plugins-dependencies
+.idea/

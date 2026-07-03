@@ -1,0 +1,52 @@
+name: kolaytr
+description: Türkiye için resmi işlem rehberi, belge çantası ve hatırlatıcı uygulaması.
+publish_to: "none"
+
+version: 3.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  flutter_localizations:
+    sdk: flutter
+
+  cupertino_icons: any
+  shared_preferences: any
+  url_launcher: any
+  supabase_flutter: any
+  flutter_local_notifications: any
+  timezone: any
+  intl: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: any
+  flutter_launcher_icons: any
+  flutter_native_splash: any
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/icon/app_icon.png
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/icon/app_icon.png
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/icon/app_icon.png
+  min_sdk_android: 23
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/icon/app_icon.png
+  android: true
+  ios: false
+  fullscreen: true
